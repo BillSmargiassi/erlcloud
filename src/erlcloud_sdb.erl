@@ -32,52 +32,52 @@
 
 -define(API_VERSION, "2009-04-15").
 
--spec(new/2 :: (string(), string()) -> aws_config()).
+-spec new(string(), string()) -> aws_config().
 new(AccessKeyID, SecretAccessKey) ->
     #aws_config{access_key_id=AccessKeyID,
                 secret_access_key=SecretAccessKey}.
 
--spec(new/3 :: (string(), string(), string()) -> aws_config()).
+-spec new(string(), string(), string()) -> aws_config().
 new(AccessKeyID, SecretAccessKey, Host) ->
     #aws_config{access_key_id=AccessKeyID,
                 secret_access_key=SecretAccessKey,
                 sdb_host=Host}.
 
--spec(configure/2 :: (string(), string()) -> ok).
+-spec configure(string(), string()) -> ok.
 configure(AccessKeyID, SecretAccessKey) ->
     put(aws_config, new(AccessKeyID, SecretAccessKey)),
     ok.
 
--spec(configure/3 :: (string(), string(), string()) -> ok).
+-spec configure(string(), string(), string()) -> ok.
 configure(AccessKeyID, SecretAccessKey, Host) ->
     put(aws_config, new(AccessKeyID, SecretAccessKey, Host)),
     ok.
 
 default_config() -> erlcloud_aws:default_config().
 
--spec create_domain/1 :: (string()) -> proplist().
+-spec create_domain(string()) -> proplist().
 create_domain(Name) ->
     create_domain(Name, default_config()).
 
--spec create_domain/2 :: (string(), aws_config()) -> proplist().
+-spec create_domain(string(), aws_config()) -> proplist().
 create_domain(Name, Config)
   when is_list(Name) ->
     sdb_simple_request(Config, "CreateDomain", [{"DomainName", Name}]).
 
--spec delete_domain/1 :: (string()) -> proplist().
+-spec delete_domain(string()) -> proplist().
 delete_domain(Name) ->
     delete_domain(Name, default_config()).
 
--spec delete_domain/2 :: (string(), aws_config()) -> proplist().
+-spec delete_domain(string(), aws_config()) -> proplist().
 delete_domain(Name, Config)
   when is_list(Name) ->
     sdb_simple_request(Config, "DeleteDomain", [{"DomainName", Name}]).
 
--spec domain_metadata/1 :: (string()) -> proplist().
+-spec domain_metadata(string()) -> proplist().
 domain_metadata(Name) ->
     domain_metadata(Name, default_config()).
 
--spec domain_metadata/2 :: (string(), aws_config()) -> proplist().
+-spec domain_metadata(string(), aws_config()) -> proplist().
 domain_metadata(Name, Config)
   when is_list(Name) ->
     {Doc, Result} = sdb_request(Config, "DomainMetadata", [{"DomainName", Name}]),
@@ -93,36 +93,36 @@ domain_metadata(Name, Config)
     ], MR),
     [{domain_metadata, Metadata}|Result].
 
--spec batch_put_attributes/2 :: (string(), [{string(), sdb_attributes()}]) -> proplist().
+-spec batch_put_attributes(string(), [{string(), sdb_attributes()}]) -> proplist().
 batch_put_attributes(DomainName, Items) ->
     batch_put_attributes(DomainName, Items, default_config()).
 
--spec batch_put_attributes/3 :: (string(), [{string(), sdb_attributes()}], aws_config()) -> proplist().
+-spec batch_put_attributes(string(), [{string(), sdb_attributes()}], aws_config()) -> proplist().
 batch_put_attributes(DomainName, Items, Config)
   when is_list(DomainName), is_list(Items) ->
     ItemParams = [[{"ItemName", Name}|attributes_list(Attrs)] || {Name, Attrs} <- Items],
     sdb_simple_request(Config, "BatchPutAttributes",
         [{"DomainName", DomainName}|erlcloud_aws:param_list(ItemParams, "Item")]).
 
--spec delete_attributes/2 :: (string(), string()) -> proplist().
+-spec delete_attributes(string(), string()) -> proplist().
 delete_attributes(DomainName, ItemName) ->
     delete_attributes(DomainName, ItemName, []).
 
--spec delete_attributes/3 :: (string(), string(), sdb_delete_attributes() | aws_config()) -> proplist().
+-spec delete_attributes(string(), string(), sdb_delete_attributes() | aws_config()) -> proplist().
 delete_attributes(DomainName, ItemName, Config)
   when is_record(Config, aws_config) ->
     delete_attributes(DomainName, ItemName, [], Config);
 delete_attributes(DomainName, ItemName, Attributes) ->
     delete_attributes(DomainName, ItemName, Attributes, []).
 
--spec delete_attributes/4 :: (string(), string(), sdb_delete_attributes(), sdb_conditionals() | aws_config()) -> proplist().
+-spec delete_attributes(string(), string(), sdb_delete_attributes(), sdb_conditionals() | aws_config()) -> proplist().
 delete_attributes(DomainName, ItemName, Attributes, Config)
   when is_record(Config, aws_config) ->
     delete_attributes(DomainName, ItemName, Attributes, [], Config);
 delete_attributes(DomainName, ItemName, Attributes, Conditionals) ->
     delete_attributes(DomainName, ItemName, Attributes, Conditionals, default_config()).
 
--spec delete_attributes/5 :: (string(), string(), sdb_delete_attributes(), sdb_conditionals(), aws_config()) -> proplist().
+-spec delete_attributes(string(), string(), sdb_delete_attributes(), sdb_conditionals(), aws_config()) -> proplist().
 delete_attributes(DomainName, ItemName, Attributes, Conditionals, Config)
   when is_list(DomainName), is_list(ItemName), is_list(Attributes),
        is_list(Conditionals) ->
@@ -130,11 +130,11 @@ delete_attributes(DomainName, ItemName, Attributes, Conditionals, Config)
               delete_attributes_list(Attributes)] ++ conditionals_list(Conditionals),
     sdb_simple_request(Config, "DeleteAttributes", Params).
 
--spec get_attributes/2 :: (string(), string()) -> proplist().
+-spec get_attributes(string(), string()) -> proplist().
 get_attributes(DomainName, ItemName) ->
     get_attributes(DomainName, ItemName, []).
 
--spec get_attributes/3 :: (string(), string(), [string()] | boolean() | aws_config()) -> proplist().
+-spec get_attributes(string(), string(), [string()] | boolean() | aws_config()) -> proplist().
 get_attributes(DomainName, ItemName, Config)
   when is_record(Config, aws_config) ->
     get_attributes(DomainName, ItemName, [], Config);
@@ -144,7 +144,7 @@ get_attributes(DomainName, ItemName, ConsistentRead)
 get_attributes(DomainName, ItemName, AttributeNames) ->
     get_attributes(DomainName, ItemName, AttributeNames, false).
 
--spec get_attributes/4 :: (string(), string(), [string()], boolean() | aws_config()) -> proplist().
+-spec get_attributes(string(), string(), [string()], boolean() | aws_config()) -> proplist().
 get_attributes(DomainName, ItemName, AttributeNames, Config)
   when is_record(Config, aws_config) ->
     get_attributes(DomainName, ItemName, AttributeNames, false, Config);
@@ -152,7 +152,7 @@ get_attributes(DomainName, ItemName, AttributeNames, ConsistentRead) ->
     get_attributes(DomainName, ItemName, AttributeNames, ConsistentRead,
                    default_config()).
 
--spec get_attributes/5 :: (string(), string(), [string()], boolean(), aws_config()) -> proplist().
+-spec get_attributes(string(), string(), [string()], boolean(), aws_config()) -> proplist().
 get_attributes(DomainName, ItemName, AttributeNames, ConsistentRead, Config) ->
     {Doc, Result} = sdb_request(Config, "GetAttributes",
         [{"DomainName", DomainName}, {"ItemName", ItemName},
@@ -168,11 +168,11 @@ extract_attributes(Attributes) ->
 extract_attribute(Node) ->
     {erlcloud_xml:get_text("Name", Node), erlcloud_xml:get_text("Value", Node)}.
 
--spec list_domains/0 :: () -> proplist().
+-spec list_domains() -> proplist().
 list_domains() ->
     list_domains(default_config()).
 
--spec list_domains/1 :: (string() | 1..100 | none | aws_config()) -> proplist().
+-spec list_domains(string() | 1..100 | none | aws_config()) -> proplist().
 list_domains(Config) when is_record(Config, aws_config) ->
     list_domains("", Config);
 list_domains(MaxDomains) when is_integer(MaxDomains); MaxDomains =:= none ->
@@ -180,13 +180,13 @@ list_domains(MaxDomains) when is_integer(MaxDomains); MaxDomains =:= none ->
 list_domains(FirstToken) ->
     list_domains(FirstToken, none).
 
--spec list_domains/2 :: (string(), 1..100 | none | aws_config()) -> proplist().
+-spec list_domains(string(), 1..100 | none | aws_config()) -> proplist().
 list_domains(FirstToken, Config) when is_record(Config, aws_config) ->
     list_domains(FirstToken, none, Config);
 list_domains(FirstToken, MaxDomains) ->
     list_domains(FirstToken, MaxDomains, default_config()).
 
--spec list_domains/3 :: (string(), 1..100 | none, aws_config()) -> proplist().
+-spec list_domains(string(), 1..100 | none, aws_config()) -> proplist().
 list_domains(FirstToken, MaxDomains, Config)
   when is_list(FirstToken),
        is_integer(MaxDomains) orelse MaxDomains =:= none ->
@@ -194,18 +194,18 @@ list_domains(FirstToken, MaxDomains, Config)
         [{"MaxNumberOfDomains", MaxDomains}, {"FirstToken", FirstToken}]),
     [{domains, erlcloud_xml:get_list("/ListDomainsResponse/ListDomainsResult/DomainName", Doc)}|Result].
 
--spec put_attributes/3 :: (string(), string(), sdb_attributes()) -> proplist().
+-spec put_attributes(string(), string(), sdb_attributes()) -> proplist().
 put_attributes(DomainName, ItemName, Attributes) ->
     put_attributes(DomainName, ItemName, Attributes, []).
 
--spec put_attributes/4 :: (string(), string(), sdb_attributes(), sdb_conditionals() | aws_config()) -> proplist().
+-spec put_attributes(string(), string(), sdb_attributes(), sdb_conditionals() | aws_config()) -> proplist().
 put_attributes(DomainName, ItemName, Attributes, Config)
   when is_record(Config, aws_config) ->
     put_attributes(DomainName, ItemName, Attributes, [], Config);
 put_attributes(DomainName, ItemName, Attributes, Conditionals) ->
     put_attributes(DomainName, ItemName, Attributes, Conditionals, default_config()).
 
--spec put_attributes/5 :: (string(), string(), sdb_attributes(), sdb_conditionals(), aws_config()) -> proplist().
+-spec put_attributes(string(), string(), sdb_attributes(), sdb_conditionals(), aws_config()) -> proplist().
 put_attributes(DomainName, ItemName, Attributes, Conditionals, Config)
   when is_list(DomainName), is_list(ItemName), is_list(Attributes),
        is_list(Conditionals) ->
@@ -213,10 +213,10 @@ put_attributes(DomainName, ItemName, Attributes, Conditionals, Config)
               attributes_list(Attributes)] ++ conditionals_list(Conditionals),
     sdb_simple_request(Config, "PutAttributes", Params).
 
--spec select/1 :: (string()) -> proplist().
+-spec select(string()) -> proplist().
 select(SelectExpression) -> select(SelectExpression, none).
 
--spec select/2 :: (string(), string() | none | boolean() | aws_config()) -> proplist().
+-spec select(string(), string() | none | boolean() | aws_config()) -> proplist().
 select(SelectExpression, Config)
   when is_record(Config, aws_config) ->
     select(SelectExpression, none, Config);
@@ -226,14 +226,14 @@ select(SelectExpression, ConsistentRead)
 select(SelectExpression, NextToken) ->
     select(SelectExpression, NextToken, false).
 
--spec select/3 :: (string(), string() | none, boolean() | aws_config()) -> proplist().
+-spec select(string(), string() | none, boolean() | aws_config()) -> proplist().
 select(SelectExpression, NextToken, Config)
   when is_record(Config, aws_config) ->
     select(SelectExpression, NextToken, false, Config);
 select(SelectExpression, NextToken, ConsistentRead) ->
     select(SelectExpression, NextToken, ConsistentRead, default_config()).
 
--spec select/4 :: (string(), string() | none, boolean(), aws_config()) -> proplist().
+-spec select(string(), string() | none, boolean(), aws_config()) -> proplist().
 select(SelectExpression, NextToken, ConsistentRead, Config)
   when is_list(SelectExpression),
        is_list(NextToken) orelse NextToken =:= none,

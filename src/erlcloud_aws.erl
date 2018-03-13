@@ -19,7 +19,7 @@ aws_request(Method, Host, Path, Params, AccessKeyID, SecretAccessKey) ->
     QueryToSign = erlcloud_http:make_query_string(QParams),
     RequestToSign = [string:to_upper(atom_to_list(Method)), $\n,
                      string:to_lower(Host), $\n, Path, $\n, QueryToSign],
-    Signature = base64:encode(crypto:sha_mac(SecretAccessKey, RequestToSign)),
+    Signature = base64:encode(erlcloud_util:sha_mac(SecretAccessKey, RequestToSign)),
 
     Query = [QueryToSign, "&Signature=", erlcloud_http:url_encode(Signature)],
 
